@@ -1,4 +1,6 @@
 # Use the official Ubuntu base image
+#docker build -t my-ubuntu-docker .
+#docker run -it my-ubuntu-docker
 FROM ubuntu:20.04
 
 # Set environment variables to avoid user interaction during installation
