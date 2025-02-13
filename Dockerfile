@@ -1,23 +1,40 @@
-# Use the official Node.js image as the base image
-FROM node:14
+# Use the official Ubuntu base image
+FROM ubuntu:20.04
 
-# Set the working directory
-WORKDIR /app
+# Set environment variables to avoid user interaction during installation
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Update the package list and install necessary packages
+RUN apt-get update && \
+    apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
 
-# Install dependencies
-RUN npm install
+# Add Docker's official GPG key
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
-# Copy the rest of the application code
-COPY . .
+# Add Docker's official APT repository
+RUN add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
-# Build the application
-RUN npm run build
+# Update the package list again and install Docker
+RUN apt-get update && \
+    apt-get install -y docker-ce docker-ce-cli containerd.io
 
-# Expose the port the app runs on
-EXPOSE 8080
+# Start Docker service
+RUN service docker start
 
-# Start the application
-CMD ["npm", "run", "serve"]
+# Set up a working directory
+WORKDIR /workspace
+
+# Copy your application files to the container
+COPY . /workspace
+
+# Run a command to verify Docker installation
+RUN docker --version
+
+# Set the entrypoint to bash
+ENTRYPOINT ["/bin/bash"]
